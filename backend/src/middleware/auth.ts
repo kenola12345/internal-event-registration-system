@@ -1,10 +1,20 @@
-import type { RequestHandler } from "express";
+import type { Request, RequestHandler } from "express";
 
 import { AppError } from "../errors/AppError.js";
 import { verifyToken } from "../lib/jwt.js";
 import { prisma } from "../lib/prisma.js";
+import type { Actor } from "../services/policies/event-policy.js";
 
 export const AUTH_COOKIE = "token";
+
+/**
+ * requireAuth の後で、ログインユーザー(操作者)を取り出す。コントローラから使う。
+ * requireAuth を付け忘れたルートでは例外にして、未認証のまま処理が進まないようにする。
+ */
+export function currentUser(req: Request): Actor {
+  if (!req.user) throw new Error("requireAuth is missing on this route");
+  return req.user;
+}
 
 /**
  * ログイン必須のルートに付ける。有効な Cookie のトークンを検証し、req.user に { id, role } を設定する。
