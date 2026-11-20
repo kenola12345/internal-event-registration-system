@@ -7,7 +7,7 @@ const body: ApiErrorBody = {
   error: { code: "RATE_LIMITED", message: "Too many attempts. Please try again later" },
 };
 
-/** Throttles login/signup per IP to slow down password guessing. Disabled in tests. */
+/** Throttles login per IP to slow down password guessing. Disabled in tests. */
 export const authRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 20,

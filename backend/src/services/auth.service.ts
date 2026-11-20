@@ -1,8 +1,8 @@
-import { Prisma, type User as UserRow } from "@prisma/client";
-import type { LoginInput, SignupInput, User } from "@template/shared";
+import type { User as UserRow } from "@prisma/client";
+import type { LoginInput, User } from "@template/shared";
 
 import { AppError } from "../errors/AppError.js";
-import { DUMMY_HASH, hashPassword, verifyPassword } from "../lib/password.js";
+import { DUMMY_HASH, verifyPassword } from "../lib/password.js";
 import { prisma } from "../lib/prisma.js";
 
 // Service layer: business rules + database access. No req/res/HTTP in here,
@@ -17,22 +17,6 @@ export function toUser(row: UserRow): User {
     role: row.role,
     createdAt: row.createdAt.toISOString(),
   };
-}
-
-export async function signup(input: SignupInput): Promise<User> {
-  const passwordHash = await hashPassword(input.password);
-  try {
-    const row = await prisma.user.create({
-      data: { email: input.email, name: input.name, passwordHash },
-    });
-    return toUser(row);
-  } catch (err) {
-    // Unique constraint on email. Relying on the DB (not a find-then-insert) avoids a race condition.
-    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
-      throw new AppError("EMAIL_TAKEN", "This email is already registered");
-    }
-    throw err;
-  }
 }
 
 /** Same error for "no such email" and "wrong password" so attackers can't discover which emails exist. */

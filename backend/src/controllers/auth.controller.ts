@@ -1,4 +1,4 @@
-import { loginSchema, signupSchema } from "@template/shared";
+import { loginSchema } from "@template/shared";
 import type { RequestHandler, Response } from "express";
 
 import { env } from "../config/env.js";
@@ -23,13 +23,6 @@ function setAuthCookie(res: Response, token: string): void {
     path: "/",
   });
 }
-
-export const signup: RequestHandler = async (req, res) => {
-  const input = getValidated(req, "body", signupSchema);
-  const user = await auth.signup(input);
-  setAuthCookie(res, signToken({ userId: user.id, role: user.role }));
-  res.status(201).json({ data: user });
-};
 
 export const login: RequestHandler = async (req, res) => {
   const input = getValidated(req, "body", loginSchema);

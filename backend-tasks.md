@@ -10,18 +10,18 @@
 - 依存: なし
 - 主な編集ファイル: `docker-compose.yml`, `backend/Dockerfile`, `package.json`, `backend/.env.example`, `backend/.env`, テンプレートの todos / signup 関連ファイル
 
-- [ ] 1-1 プロジェクトルート `internal-event-registration-system/` の構成がマニフェスト 8 章のトップレベル(`shared/`, `backend/`, `frontend/`, `docker/`, `docs/`, `docker-compose.yml`)と一致することを確認する(新規作成はしない)
-- [ ] 1-2 `backend/.env.example` を確認し、`DATABASE_URL` / `JWT_SECRET` / `PORT` / `NODE_ENV` / `CORS_ORIGIN` がマニフェスト 9.4 と一致することを確認する。`cp backend/.env.example backend/.env` で `.env` を作り、`JWT_SECRET` を 32 文字以上のランダム値にする(`openssl rand -hex 32`)
-- [ ] 1-3 テンプレートの todos を削除する: `backend/src/routes/todos.routes.ts`, `controllers/todos.controller.ts`, `services/todos.service.ts`, `tests/todos.api.test.ts`, `src/jobs/purgeCompletedTodos.ts`(と `server.ts` での呼び出し)、`routes/index.ts` の登録行
-- [ ] 1-4 テンプレートのサインアップを削除する: `routes/auth.routes.ts` の `POST /auth/signup`、`controllers/auth.controller.ts` の `signup`、`services/auth.service.ts` の `signup`、`tests/auth.api.test.ts` のサインアップのテスト
-- [ ] 1-5 `npm run typecheck -w backend` が通ることを確認する(この時点では shared の `todo.ts` / `signupSchema` は残っていてよい。削除は Phase 2)
-- [ ] 1-6 `backend/Dockerfile` を作成する(`node:24`、作業ディレクトリ、`npm ci` 用にワークスペースの `package.json` 群をコピー、`EXPOSE 3000`)
-- [ ] 1-7 `docker-compose.yml` に `backend` サービスを追加する: `build: { context: ., dockerfile: backend/Dockerfile }`、`depends_on: db (condition: service_healthy)`、ポート `3000:3000`、`environment`(`DATABASE_URL=postgresql://app:app@db:5432/app`、開発用 `JWT_SECRET`、`NODE_ENV=development`、`CORS_ORIGIN=http://localhost:5173`、`TZ=UTC`)
-- [ ] 1-8 `backend` サービスにソースのボリュームマウントと、`node_modules` 用の名前付きボリュームを追加する(ホストと共有しない)
-- [ ] 1-9 `backend` サービスの `command` を `prisma migrate deploy` → `seed` → `tsx watch` の順に実行するよう設定する(seed は Phase 2 で書き換えるまではテンプレートのもので可)
-- [ ] 1-10 ルートの `package.json` の `db:up` を `docker compose up -d --wait db` に変更する(ローカル実行では DB だけ起動する)
-- [ ] 1-11 `docker compose up -d` で `db` と `backend` が起動し、`curl http://localhost:3000/api/health` が `{"data":{"ok":true}}` を返すことを確認する
-- [ ] 1-12 ローカル実行(`npm run db:up && npm run dev -w backend`)でも同じヘルスチェックが通ることを確認する
+- [x] 1-1 プロジェクトルート `internal-event-registration-system/` の構成がマニフェスト 8 章のトップレベル(`shared/`, `backend/`, `frontend/`, `docker/`, `docs/`, `docker-compose.yml`)と一致することを確認する(新規作成はしない)
+- [x] 1-2 `backend/.env.example` を確認し、`DATABASE_URL` / `JWT_SECRET` / `PORT` / `NODE_ENV` / `CORS_ORIGIN` がマニフェスト 9.4 と一致することを確認する。`cp backend/.env.example backend/.env` で `.env` を作り、`JWT_SECRET` を 32 文字以上のランダム値にする(`openssl rand -hex 32`)
+- [x] 1-3 テンプレートの todos を削除する: `backend/src/routes/todos.routes.ts`, `controllers/todos.controller.ts`, `services/todos.service.ts`, `tests/todos.api.test.ts`, `src/jobs/purgeCompletedTodos.ts`(と `server.ts` での呼び出し)、`routes/index.ts` の登録行
+- [x] 1-4 テンプレートのサインアップを削除する: `routes/auth.routes.ts` の `POST /auth/signup`、`controllers/auth.controller.ts` の `signup`、`services/auth.service.ts` の `signup`、`tests/auth.api.test.ts` のサインアップのテスト
+- [x] 1-5 `npm run typecheck -w backend` が通ることを確認する(この時点では shared の `todo.ts` / `signupSchema` は残っていてよい。削除は Phase 2)
+- [x] 1-6 `backend/Dockerfile` を作成する(`node:24`、作業ディレクトリ、`npm ci` 用にワークスペースの `package.json` 群をコピー、`EXPOSE 3000`)
+- [x] 1-7 `docker-compose.yml` に `backend` サービスを追加する: `build: { context: ., dockerfile: backend/Dockerfile }`、`depends_on: db (condition: service_healthy)`、ポート `3000:3000`、`environment`(`DATABASE_URL=postgresql://app:app@db:5432/app`、開発用 `JWT_SECRET`、`NODE_ENV=development`、`CORS_ORIGIN=http://localhost:5173`、`TZ=UTC`)
+- [x] 1-8 `backend` サービスにソースのボリュームマウントと、`node_modules` 用の名前付きボリュームを追加する(ホストと共有しない)
+- [x] 1-9 `backend` サービスの `command` を `prisma migrate deploy` → `seed` → `tsx watch` の順に実行するよう設定する(seed は Phase 2 で書き換えるまではテンプレートのもので可)
+- [x] 1-10 ルートの `package.json` の `db:up` を `docker compose up -d --wait db` に変更する(ローカル実行では DB だけ起動する)
+- [x] 1-11 `docker compose up -d` で `db` と `backend` が起動し、`curl http://localhost:3000/api/health` が `{"data":{"ok":true}}` を返すことを確認する
+- [x] 1-12 ローカル実行(`npm run db:up && npm run dev -w backend`)でも同じヘルスチェックが通ることを確認する
 
 ## Phase 2: 共通基盤(スキーマ・共有型・共通部品)【直列】
 - 依存: Phase 1

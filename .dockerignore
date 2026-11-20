@@ -1,0 +1,9 @@
+# イメージに不要なもの・秘密情報を含むものを除外する
+**/node_modules
+**/dist
+**/coverage
+**/.env
+**/.env.*
+!**/.env.example
+.git
+docs

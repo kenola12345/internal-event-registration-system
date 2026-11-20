@@ -1,4 +1,5 @@
-# Local development database only. The frontend and backend run with npm (see README).
+# `docker compose up -d` だけで開発環境が起動する(マニフェスト 9.2)。
+# 値はすべて開発用。本物の秘密情報は置かず、必要ならルートの .env で上書きする。
 services:
   db:
     image: postgres:17
@@ -18,5 +19,38 @@ services:
       timeout: 3s
       retries: 10
 
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    # マイグレーションと seed は DB が受け付け可能になってから行う
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${BACKEND_PORT:-3000}:3000"
+    environment:
+      # コンテナ内からは db サービス名で接続する(ホストの 5433 ではない)
+      DATABASE_URL: postgresql://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:-app}@db:5432/${POSTGRES_DB:-app}
+      JWT_SECRET: ${JWT_SECRET:-dev-only-jwt-secret-change-me-0123456789abcdef}
+      PORT: 3000
+      NODE_ENV: development
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+      # サーバー時刻を UTC に固定する(UTC 保存・JST 表示の方針。マニフェスト 7.5)
+      TZ: UTC
+    volumes:
+      # ソースをマウントしてホットリロードする
+      - ./backend:/app/backend
+      - ./shared:/app/shared
+      # node_modules はイメージ側(Linux 用バイナリ)を使い、ホストと共有しない
+      - backend-node-modules:/app/node_modules
+    # スキーマ変更に追従するため起動のたびに generate → 未適用のマイグレーションを適用 → seed → 開発サーバー
+    command: >
+      sh -c "npx prisma generate &&
+             npx prisma migrate deploy &&
+             npm run seed &&
+             npm run dev"
+
 volumes:
   db-data:
+  backend-node-modules:

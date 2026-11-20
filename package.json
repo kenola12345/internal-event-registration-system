@@ -15,7 +15,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "db:up": "docker compose up -d --wait",
+    "db:up": "docker compose up -d --wait db",
     "db:down": "docker compose down",
     "db:migrate": "npm run prisma:migrate -w backend",
     "db:seed": "npm run seed -w backend"
