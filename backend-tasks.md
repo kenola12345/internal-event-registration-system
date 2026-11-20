@@ -77,100 +77,100 @@
 - 主な編集ファイル: `backend/src/routes/auth.routes.ts`, `controllers/auth.controller.ts`, `services/auth.service.ts`, `backend/tests/auth.api.test.ts`
 - 対象エンドポイント: A1 `POST /api/auth/login`, A2 `POST /api/auth/logout`, A3 `GET /api/auth/me`
 
-- [ ] 3-1 A1: ログインのサービスとコントローラが `MEMBER` / `ADMIN` で動き、`toUser()` を通すこと、ダミーハッシュ照合とレート制限が残っていることを確認する
-- [ ] 3-2 A2・A3: ログアウトが未ログインでも 204、`me` が `requireAuth`(DB 読み込み版)で動くことを確認する
-- [ ] 3-3 `tests/auth.api.test.ts`: ログイン成功で Cookie(`HttpOnly`, `SameSite=Lax`)が付く、メール不存在とパスワード誤りが同じ `401 INVALID_CREDENTIALS`、形式不正 400
-- [ ] 3-4 `tests/auth.api.test.ts`: `me` が未ログイン・改ざんトークン・削除済みユーザーで 401、ロールを DB で変更すると次のリクエストから反映される
+- [x] 3-1 A1: ログインのサービスとコントローラが `MEMBER` / `ADMIN` で動き、`toUser()` を通すこと、ダミーハッシュ照合とレート制限が残っていることを確認する
+- [x] 3-2 A2・A3: ログアウトが未ログインでも 204、`me` が `requireAuth`(DB 読み込み版)で動くことを確認する
+- [x] 3-3 `tests/auth.api.test.ts`: ログイン成功で Cookie(`HttpOnly`, `SameSite=Lax`)が付く、メール不存在とパスワード誤りが同じ `401 INVALID_CREDENTIALS`、形式不正 400
+- [x] 3-4 `tests/auth.api.test.ts`: `me` が未ログイン・改ざんトークン・削除済みユーザーで 401、ロールを DB で変更すると次のリクエストから反映される
 
 ## Phase 4: イベント API 【並列可】
 - 依存: Phase 2
 - 主な編集ファイル: `backend/src/routes/events.routes.ts`, `controllers/events.controller.ts`, `services/events.service.ts`, `backend/tests/events.api.test.ts`
 - 対象エンドポイント: E1 `GET /api/events`, E2 `GET /api/events/:eventId`, E3 `POST /api/events`, E4 `PATCH /api/events/:eventId`, E5 `DELETE /api/events/:eventId`
 
-- [ ] 4-1 E1 service: `listEvents(actor, query)` の where 条件(`deletedAt: null`、`includePast`、`q` の大文字小文字無視の部分一致、`categoryId`、正規化した `tag`)
-- [ ] 4-2 E1 service: ソート(`startsAt` + `id`)とページング、`total` の取得、`toEventSummary()` で整形
-- [ ] 4-3 E1 route + controller(`validate({ query })`)
-- [ ] 4-4 E2 route + controller(`getEventDetail` を呼ぶだけ。無い・削除済みは 404)
-- [ ] 4-5 E3 service: サーバー時刻で `startsAt` / `registrationDeadline` が未来か検証、カテゴリが存在し有効か検証(違反は `VALIDATION_ERROR` の `details`)
-- [ ] 4-6 E3 service: タグを正規化して upsert し、`organizerId = actor.id` でイベントと `event_tags` を作成、`getEventDetail` を返す
-- [ ] 4-7 E3 route + controller(201)
-- [ ] 4-8 E4 service: トランザクション + `lockEvent`、`assertCanManageEvent`、既存値とのマージ後の前後関係検証、変更された項目の判定
-- [ ] 4-9 E4 service: 開催開始後の日時・定員・締切の変更を `409 EVENT_ALREADY_STARTED`、参加確定数未満の定員を `409 CAPACITY_BELOW_REGISTERED`、カテゴリ変更時の有効性チェック
-- [ ] 4-10 E4 service: 定員増加時の `promoteWaiters(trigger: CAPACITY_INCREASE)`、参加者ありの日時変更で `scheduleChangedAt` 記録、タグの置き換え、`warnings` の組み立て
-- [ ] 4-11 E4 service: コミット後のログ(日時変更の `warn`、繰り上げ)。route + controller(`{ event, warnings }` を返す)
-- [ ] 4-12 E5 service + route + controller: `lockEvent`、`assertCanManageEvent`、`deletedAt` 設定、コミット後に参加者・待機者数をログ、204
-- [ ] 4-13 `tests/events.api.test.ts`: E1 の検索・カテゴリ・タグ・ソート・`includePast`・ページング、削除済みが出ない、存在しない `categoryId` で 0 件
-- [ ] 4-14 `tests/events.api.test.ts`: E2 の `permissions` / `myStatus`(主催者・参加確定・待機中・未参加)、削除済み 404
-- [ ] 4-15 `tests/events.api.test.ts`: E3 の過去日時 400、終了 <= 開始 400、締切 > 開始 400、無効カテゴリ 400、ボディの `organizerId` が無視される、タグの正規化
-- [ ] 4-16 `tests/events.api.test.ts`: E4 の他人 403、開催後の日時変更 409、定員減少 409、定員増で繰り上げ + `WAITLIST_PROMOTED`、参加者ありの日時変更で `SCHEDULE_CHANGED_WITH_PARTICIPANTS`
-- [ ] 4-17 `tests/events.api.test.ts`: E5 の他人 403、admin は削除可、削除後 E2 が 404、二重削除 404
+- [x] 4-1 E1 service: `listEvents(actor, query)` の where 条件(`deletedAt: null`、`includePast`、`q` の大文字小文字無視の部分一致、`categoryId`、正規化した `tag`)
+- [x] 4-2 E1 service: ソート(`startsAt` + `id`)とページング、`total` の取得、`toEventSummary()` で整形
+- [x] 4-3 E1 route + controller(`validate({ query })`)
+- [x] 4-4 E2 route + controller(`getEventDetail` を呼ぶだけ。無い・削除済みは 404)
+- [x] 4-5 E3 service: サーバー時刻で `startsAt` / `registrationDeadline` が未来か検証、カテゴリが存在し有効か検証(違反は `VALIDATION_ERROR` の `details`)
+- [x] 4-6 E3 service: タグを正規化して upsert し、`organizerId = actor.id` でイベントと `event_tags` を作成、`getEventDetail` を返す
+- [x] 4-7 E3 route + controller(201)
+- [x] 4-8 E4 service: トランザクション + `lockEvent`、`assertCanManageEvent`、既存値とのマージ後の前後関係検証、変更された項目の判定
+- [x] 4-9 E4 service: 開催開始後の日時・定員・締切の変更を `409 EVENT_ALREADY_STARTED`、参加確定数未満の定員を `409 CAPACITY_BELOW_REGISTERED`、カテゴリ変更時の有効性チェック
+- [x] 4-10 E4 service: 定員増加時の `promoteWaiters(trigger: CAPACITY_INCREASE)`、参加者ありの日時変更で `scheduleChangedAt` 記録、タグの置き換え、`warnings` の組み立て
+- [x] 4-11 E4 service: コミット後のログ(日時変更の `warn`、繰り上げ)。route + controller(`{ event, warnings }` を返す)
+- [x] 4-12 E5 service + route + controller: `lockEvent`、`assertCanManageEvent`、`deletedAt` 設定、コミット後に参加者・待機者数をログ、204
+- [x] 4-13 `tests/events.api.test.ts`: E1 の検索・カテゴリ・タグ・ソート・`includePast`・ページング、削除済みが出ない、存在しない `categoryId` で 0 件
+- [x] 4-14 `tests/events.api.test.ts`: E2 の `permissions` / `myStatus`(主催者・参加確定・待機中・未参加)、削除済み 404
+- [x] 4-15 `tests/events.api.test.ts`: E3 の過去日時 400、終了 <= 開始 400、締切 > 開始 400、無効カテゴリ 400、ボディの `organizerId` が無視される、タグの正規化
+- [x] 4-16 `tests/events.api.test.ts`: E4 の他人 403、開催後の日時変更 409、定員減少 409、定員増で繰り上げ + `WAITLIST_PROMOTED`、参加者ありの日時変更で `SCHEDULE_CHANGED_WITH_PARTICIPANTS`
+- [x] 4-17 `tests/events.api.test.ts`: E5 の他人 403、admin は削除可、削除後 E2 が 404、二重削除 404
 
 ## Phase 5: 参加登録・出席 API 【並列可】
 - 依存: Phase 2
 - 主な編集ファイル: `backend/src/routes/registrations.routes.ts`, `controllers/registrations.controller.ts`, `services/registrations.service.ts`, `services/attendance.service.ts`, `backend/tests/registrations.api.test.ts`, `backend/tests/attendance.api.test.ts`
 - 対象エンドポイント: R1 `POST /api/events/:eventId/registration`, R2 `DELETE /api/events/:eventId/registration`, R3 `GET /api/events/:eventId/registrations`, R4 `DELETE /api/events/:eventId/registrations/:registrationId`, R5 `PUT /api/events/:eventId/registrations/:registrationId/attendance`
 
-- [ ] 5-1 R1 service: トランザクション + `lockEvent`、判定順(主催者 403 → 締切・開始 409 → 登録済み/待機中 409 → 空き 409 `EVENT_FULL`)
-- [ ] 5-2 R1 service: 作成と `P2002` → `ALREADY_REGISTERED` の変換、`{ registrationId, event }` を返す。route + controller(201)
-- [ ] 5-3 R2 service: トランザクション + `lockEvent`、自分の登録の取得(無ければ 404)、キャンセル期限 409、削除、開催前なら `promoteWaiters(count: 1, trigger: CANCELLATION, vacatedByUserId: 本人)`
-- [ ] 5-4 R2: コミット後の繰り上げログ。route + controller(204)
-- [ ] 5-5 R3 service + route + controller: `assertCanManageEvent`、参加確定者(登録順・出席状態)、待機者(position 昇順・順位)、`summary`
-- [ ] 5-6 R4 service + route + controller: `requireRole("ADMIN")`、`registrationId` がイベントに属するか(違反 404)、期限チェックなしで削除、開催前なら `promoteWaiters(trigger: ADMIN_CANCELLATION)`、コミット後のログ、204
-- [ ] 5-7 R5 service(`attendance.service.ts`)+ route + controller: 判定順(イベント 404 → 権限 403 → 開催前 400 `EVENT_NOT_STARTED` → 登録 404)、マーク日時・マーク者の記録 / `UNMARKED` で NULL
-- [ ] 5-8 `tests/registrations.api.test.ts`: R1 の成功、満席 409、締切後 409、開催後 409、二重登録 409、待機中の登録 409、主催者 403
-- [ ] 5-9 `tests/registrations.api.test.ts`: R2 の成功、期限後 409、未登録 404、キャンセルで先頭の待機者が繰り上がり履歴(`CANCELLATION`, 空きを作った人)が残る
-- [ ] 5-10 `tests/registrations.api.test.ts`: **同時キャンセル 2 件(`Promise.all`)で定員超過・二重繰り上げが起きない**、空き 1 席への同時登録 2 件で 1 件だけ成功する
-- [ ] 5-11 `tests/registrations.api.test.ts`: R3 の他人 403・主催者と admin は取得可、R4 の member 403・期限後も admin は成功・別イベントの `registrationId` は 404・開催後は繰り上げなし
-- [ ] 5-12 `tests/attendance.api.test.ts`: R5 の開催前 400、出席→欠席→未マークの変更、`attendanceMarkedAt` の設定と NULL 化、他人 403
+- [x] 5-1 R1 service: トランザクション + `lockEvent`、判定順(主催者 403 → 締切・開始 409 → 登録済み/待機中 409 → 空き 409 `EVENT_FULL`)
+- [x] 5-2 R1 service: 作成と `P2002` → `ALREADY_REGISTERED` の変換、`{ registrationId, event }` を返す。route + controller(201)
+- [x] 5-3 R2 service: トランザクション + `lockEvent`、自分の登録の取得(無ければ 404)、キャンセル期限 409、削除、開催前なら `promoteWaiters(count: 1, trigger: CANCELLATION, vacatedByUserId: 本人)`
+- [x] 5-4 R2: コミット後の繰り上げログ。route + controller(204)
+- [x] 5-5 R3 service + route + controller: `assertCanManageEvent`、参加確定者(登録順・出席状態)、待機者(position 昇順・順位)、`summary`
+- [x] 5-6 R4 service + route + controller: `requireRole("ADMIN")`、`registrationId` がイベントに属するか(違反 404)、期限チェックなしで削除、開催前なら `promoteWaiters(trigger: ADMIN_CANCELLATION)`、コミット後のログ、204
+- [x] 5-7 R5 service(`attendance.service.ts`)+ route + controller: 判定順(イベント 404 → 権限 403 → 開催前 400 `EVENT_NOT_STARTED` → 登録 404)、マーク日時・マーク者の記録 / `UNMARKED` で NULL
+- [x] 5-8 `tests/registrations.api.test.ts`: R1 の成功、満席 409、締切後 409、開催後 409、二重登録 409、待機中の登録 409、主催者 403
+- [x] 5-9 `tests/registrations.api.test.ts`: R2 の成功、期限後 409、未登録 404、キャンセルで先頭の待機者が繰り上がり履歴(`CANCELLATION`, 空きを作った人)が残る
+- [x] 5-10 `tests/registrations.api.test.ts`: **同時キャンセル 2 件(`Promise.all`)で定員超過・二重繰り上げが起きない**、空き 1 席への同時登録 2 件で 1 件だけ成功する
+- [x] 5-11 `tests/registrations.api.test.ts`: R3 の他人 403・主催者と admin は取得可、R4 の member 403・期限後も admin は成功・別イベントの `registrationId` は 404・開催後は繰り上げなし
+- [x] 5-12 `tests/attendance.api.test.ts`: R5 の開催前 400、出席→欠席→未マークの変更、`attendanceMarkedAt` の設定と NULL 化、他人 403
 
 ## Phase 6: キャンセル待ち API 【並列可】
 - 依存: Phase 2
 - 主な編集ファイル: `backend/src/routes/waitlist.routes.ts`, `controllers/waitlist.controller.ts`, `services/waitlist.service.ts`, `backend/tests/waitlist.api.test.ts`
 - 対象エンドポイント: W1 `POST /api/events/:eventId/waitlist`, W2 `DELETE /api/events/:eventId/waitlist`
 
-- [ ] 6-1 W1 service: トランザクション + `lockEvent`、判定順(主催者 403 → 締切・開始 409 → 登録済み/待機中 409 → 空きあり 409 `SEATS_AVAILABLE`)
-- [ ] 6-2 W1 service: `現在の最大 position + 1` で採番して作成、`P2002` → `ALREADY_REGISTERED`、`{ waitlistEntryId, event }` を返す。route + controller(201)
-- [ ] 6-3 W2 service + route + controller: トランザクション + `lockEvent`、自分の待機行が無ければ 404、削除(他の行は更新しない)、204
-- [ ] 6-4 `tests/waitlist.api.test.ts`: W1 の満席時のみ成功・空きあり 409・主催者 403・締切後 409・二重 409、順位(`myStatus.rank`)が 1, 2, 3 と付く
-- [ ] 6-5 `tests/waitlist.api.test.ts`: W2 で中間の人が抜けると後ろの人の順位が 1 つ上がる、再登録で最後尾、繰り上げ済みの人の W2 は 404
+- [x] 6-1 W1 service: トランザクション + `lockEvent`、判定順(主催者 403 → 締切・開始 409 → 登録済み/待機中 409 → 空きあり 409 `SEATS_AVAILABLE`)
+- [x] 6-2 W1 service: `現在の最大 position + 1` で採番して作成、`P2002` → `ALREADY_REGISTERED`、`{ waitlistEntryId, event }` を返す。route + controller(201)
+- [x] 6-3 W2 service + route + controller: トランザクション + `lockEvent`、自分の待機行が無ければ 404、削除(他の行は更新しない)、204
+- [x] 6-4 `tests/waitlist.api.test.ts`: W1 の満席時のみ成功・空きあり 409・主催者 403・締切後 409・二重 409、順位(`myStatus.rank`)が 1, 2, 3 と付く
+- [x] 6-5 `tests/waitlist.api.test.ts`: W2 で中間の人が抜けると後ろの人の順位が 1 つ上がる、再登録で最後尾、繰り上げ済みの人の W2 は 404
 
 ## Phase 7: フィードバック API 【並列可】
 - 依存: Phase 2
 - 主な編集ファイル: `backend/src/routes/feedbacks.routes.ts`, `controllers/feedbacks.controller.ts`, `services/feedbacks.service.ts`, `backend/tests/feedbacks.api.test.ts`
 - 対象エンドポイント: F1 `GET /api/events/:eventId/feedbacks`, F2 `POST /api/events/:eventId/feedback`, F3 `PATCH /api/events/:eventId/feedback`, F4 `PATCH /api/feedbacks/:feedbackId/visibility`
 
-- [ ] 7-1 F1 service: 公開分の平均(小数第 1 位)と件数、`myFeedback`、ロール別の `items`(一般は公開のみ、admin は全件)とページング
-- [ ] 7-2 F1 service: `Feedback` への整形(匿名かつ閲覧者が admin でなければ `author: null`、`isMine`)。route + controller
-- [ ] 7-3 F2 service: 判定順(イベント 404 → 主催者・開催終了前・`PRESENT` でない 403 `FEEDBACK_NOT_ALLOWED`(理由別メッセージ)→ 投稿済み 409)、`P2002` → `FEEDBACK_ALREADY_EXISTS`。route + controller(201)
-- [ ] 7-4 F3 service + route + controller: 自分の投稿が無ければ 404、`PRESENT` でなければ 403、非公開状態は変えない
-- [ ] 7-5 F4 service + route + controller: `requireRole("ADMIN")`、削除済みイベントのレビューは 404、`isHidden` に応じて `hiddenAt` / `hiddenById` を設定・NULL 化
-- [ ] 7-6 `tests/feedbacks.api.test.ts`: F2 の開催終了前 403、欠席・未マーク 403、主催者 403、2 件目 409、成功
-- [ ] 7-7 `tests/feedbacks.api.test.ts`: F1 の匿名投稿者が member には `null`・admin には見える、非公開が平均・件数・member の一覧から除外され `myFeedback` には出る
-- [ ] 7-8 `tests/feedbacks.api.test.ts`: F3 の編集成功、欠席に変わった後は 403、非公開のまま編集しても非公開。F4 の member 403、非公開化と再公開
+- [x] 7-1 F1 service: 公開分の平均(小数第 1 位)と件数、`myFeedback`、ロール別の `items`(一般は公開のみ、admin は全件)とページング
+- [x] 7-2 F1 service: `Feedback` への整形(匿名かつ閲覧者が admin でなければ `author: null`、`isMine`)。route + controller
+- [x] 7-3 F2 service: 判定順(イベント 404 → 主催者・開催終了前・`PRESENT` でない 403 `FEEDBACK_NOT_ALLOWED`(理由別メッセージ)→ 投稿済み 409)、`P2002` → `FEEDBACK_ALREADY_EXISTS`。route + controller(201)
+- [x] 7-4 F3 service + route + controller: 自分の投稿が無ければ 404、`PRESENT` でなければ 403、非公開状態は変えない
+- [x] 7-5 F4 service + route + controller: `requireRole("ADMIN")`、削除済みイベントのレビューは 404、`isHidden` に応じて `hiddenAt` / `hiddenById` を設定・NULL 化
+- [x] 7-6 `tests/feedbacks.api.test.ts`: F2 の開催終了前 403、欠席・未マーク 403、主催者 403、2 件目 409、成功
+- [x] 7-7 `tests/feedbacks.api.test.ts`: F1 の匿名投稿者が member には `null`・admin には見える、非公開が平均・件数・member の一覧から除外され `myFeedback` には出る
+- [x] 7-8 `tests/feedbacks.api.test.ts`: F3 の編集成功、欠席に変わった後は 403、非公開のまま編集しても非公開。F4 の member 403、非公開化と再公開
 
 ## Phase 8: カテゴリ・タグ API 【並列可】
 - 依存: Phase 2
 - 主な編集ファイル: `backend/src/routes/categories.routes.ts`, `routes/tags.routes.ts`, `controllers/categories.controller.ts`, `controllers/tags.controller.ts`, `services/categories.service.ts`, `services/tags.service.ts`, `backend/tests/categories.api.test.ts`, `backend/tests/tags.api.test.ts`
 - 対象エンドポイント: C1 `GET /api/categories`, C2 `POST /api/categories`, C3 `PATCH /api/categories/:categoryId`, C4 `DELETE /api/categories/:categoryId`, T1 `GET /api/tags`
 
-- [ ] 8-1 C1 service + route + controller: 有効のみ / admin の `includeInactive=true` で無効と `eventCount`(削除済みイベント含む)、member の指定は無視、`sortOrder` → `name` 順
-- [ ] 8-2 C2 service + route + controller: `requireRole("ADMIN")`、大文字小文字を無視した重複チェック、`P2002` → `CATEGORY_NAME_TAKEN`、201
-- [ ] 8-3 C3 service + route + controller: 自分以外との名前重複 409、`isActive` の切り替え、無ければ 404
-- [ ] 8-4 C4 service + route + controller: 使用件数(削除済み含む)> 0 なら `409 CATEGORY_IN_USE`(件数入りメッセージ)、`P2003` も同じに変換、204
-- [ ] 8-5 T1 service + route + controller: `q` を正規化して前方一致、未削除イベントでの使用件数の降順 → 名前順、`limit`
-- [ ] 8-6 `tests/categories.api.test.ts`: member の C2〜C4 が 403、「勉強会」と大文字小文字違いの重複 409、使用中の削除 409・未使用は 204、無効カテゴリが member の C1 に出ない
-- [ ] 8-7 `tests/tags.api.test.ts`: 前方一致・正規化(「ＲＥＡ」で `react` が出る)・使用件数順・削除済みイベントを数えない
+- [x] 8-1 C1 service + route + controller: 有効のみ / admin の `includeInactive=true` で無効と `eventCount`(削除済みイベント含む)、member の指定は無視、`sortOrder` → `name` 順
+- [x] 8-2 C2 service + route + controller: `requireRole("ADMIN")`、大文字小文字を無視した重複チェック、`P2002` → `CATEGORY_NAME_TAKEN`、201
+- [x] 8-3 C3 service + route + controller: 自分以外との名前重複 409、`isActive` の切り替え、無ければ 404
+- [x] 8-4 C4 service + route + controller: 使用件数(削除済み含む)> 0 なら `409 CATEGORY_IN_USE`(件数入りメッセージ)、`P2003` も同じに変換、204
+- [x] 8-5 T1 service + route + controller: `q` を正規化して前方一致、未削除イベントでの使用件数の降順 → 名前順、`limit`
+- [x] 8-6 `tests/categories.api.test.ts`: member の C2〜C4 が 403、「勉強会」と大文字小文字違いの重複 409、使用中の削除 409・未使用は 204、無効カテゴリが member の C1 に出ない
+- [x] 8-7 `tests/tags.api.test.ts`: 前方一致・正規化(「ＲＥＡ」で `react` が出る)・使用件数順・削除済みイベントを数えない
 
 ## Phase 9: マイページ API 【並列可】
 - 依存: Phase 2
 - 主な編集ファイル: `backend/src/routes/me.routes.ts`, `controllers/me.controller.ts`, `services/me.service.ts`, `backend/tests/me.api.test.ts`
 - 対象エンドポイント: M1 `GET /api/me/events`, M2 `GET /api/me/stats`
 
-- [ ] 9-1 M1 service: `organizing` / `organizedPast`(最大 20)/ `registered` / `waitlisted` の 4 区分(削除済み除外、並び順はマニフェスト M1)
-- [ ] 9-2 M1 service: `history`(参加確定・開催開始済み・新しい順・最大 50、`attendance` と `hasFeedback` 付き)。route + controller
-- [ ] 9-3 M2 service + route + controller: 母集団(開催開始済み・未削除・参加確定)から `participationCount`、出席状態別件数、`attendanceRate`(分母 0 で `null`)、`byCategory`(件数 0 は除外)
-- [ ] 9-4 `tests/me.api.test.ts`: M1 の各区分に正しいイベントが入る(主催・参加・待機・履歴、削除済みは出ない)
-- [ ] 9-5 `tests/me.api.test.ts`: M2 の出席率(未マークは分母から除外、全員未マークで `null`)、累計参加数に欠席を含めない、カテゴリ別集計
+- [x] 9-1 M1 service: `organizing` / `organizedPast`(最大 20)/ `registered` / `waitlisted` の 4 区分(削除済み除外、並び順はマニフェスト M1)
+- [x] 9-2 M1 service: `history`(参加確定・開催開始済み・新しい順・最大 50、`attendance` と `hasFeedback` 付き)。route + controller
+- [x] 9-3 M2 service + route + controller: 母集団(開催開始済み・未削除・参加確定)から `participationCount`、出席状態別件数、`attendanceRate`(分母 0 で `null`)、`byCategory`(件数 0 は除外)
+- [x] 9-4 `tests/me.api.test.ts`: M1 の各区分に正しいイベントが入る(主催・参加・待機・履歴、削除済みは出ない)
+- [x] 9-5 `tests/me.api.test.ts`: M2 の出席率(未マークは分母から除外、全員未マークで `null`)、累計参加数に欠席を含めない、カテゴリ別集計
 
 ## Phase 10: 統合・最終確認 【直列】
 - 依存: Phase 3〜9

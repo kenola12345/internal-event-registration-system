@@ -1,7 +1,10 @@
+import type { Request, Response } from "express";
 import request from "supertest";
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { app, createUser, loggedInAgent, resetDb } from "./helpers.js";
+import { prisma } from "../src/lib/prisma.js";
+import { requireAuth } from "../src/middleware/auth.js";
+import { app, createUser, loggedInAgent, loginAs, resetDb } from "./helpers.js";
 
 beforeEach(resetDb);
 
@@ -27,6 +30,17 @@ describe("POST /api/auth/login", () => {
     const cookie = res.headers["set-cookie"]?.[0] ?? "";
     expect(cookie).toMatch(/token=/);
     expect(cookie).toMatch(/HttpOnly/i);
+    // クロスサイトの POST に Cookie を送らせない(CSRF 対策。マニフェスト 3-1)
+    expect(cookie).toMatch(/SameSite=Lax/i);
+  });
+
+  it("returns the role from the database as MEMBER / ADMIN", async () => {
+    await createUser({ email: "admin@example.com", role: "ADMIN" });
+    const res = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "admin@example.com", password: "password123" })
+      .expect(200);
+    expect(res.body.data.role).toBe("ADMIN");
   });
 
   it("gives the same error for a wrong password and an unknown email", async () => {
@@ -70,5 +84,39 @@ describe("GET /api/auth/me and logout", () => {
 
   it("rejects a tampered token", async () => {
     await request(app).get("/api/auth/me").set("Cookie", "token=not.a.jwt").expect(401);
+  });
+
+  it("logout answers 204 even when not logged in", async () => {
+    await request(app).post("/api/auth/logout").expect(204);
+  });
+
+  it("トークンが有効でもユーザーが DB から消えていれば 401", async () => {
+    const user = await createUser({ email: "gone@example.com" });
+    const agent = await loginAs(user);
+    await prisma.user.delete({ where: { id: user.id } });
+    const res = await agent.get("/api/auth/me").expect(401);
+    expect(res.body.error.code).toBe("UNAUTHENTICATED");
+  });
+});
+
+describe("requireAuth", () => {
+  it("トークン発行後に DB でロールを変えると、次のリクエストから新しいロールが使われる", async () => {
+    // トークンには MEMBER が入ったまま。認可は DB の現在値を使う(マニフェスト 2.5)
+    const user = await createUser({ email: "promoted@example.com" });
+    const login = await request(app)
+      .post("/api/auth/login")
+      .send({ email: user.email, password: "password123" })
+      .expect(200);
+    const token = /token=([^;]+)/.exec(login.headers["set-cookie"]?.[0] ?? "")?.[1];
+    await prisma.user.update({ where: { id: user.id }, data: { role: "ADMIN" } });
+
+    const req = { cookies: { token } } as unknown as Request;
+    let calledNext = false;
+    await requireAuth(req, {} as unknown as Response, () => {
+      calledNext = true;
+    });
+
+    expect(calledNext).toBe(true);
+    expect(req.user).toEqual({ id: user.id, role: "ADMIN" });
   });
 });

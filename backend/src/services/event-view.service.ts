@@ -47,16 +47,15 @@ async function loadMyStatuses(
   rows: { id: string; organizerId: string }[],
 ): Promise<Map<string, MyEventStatus>> {
   const eventIds = rows.map((row) => row.id);
-  const [registrations, waitlistEntries] = await Promise.all([
-    db.registration.findMany({
-      where: { userId: actor.id, eventId: { in: eventIds } },
-      select: { eventId: true },
-    }),
-    db.waitlistEntry.findMany({
-      where: { userId: actor.id, eventId: { in: eventIds } },
-      select: { eventId: true, position: true },
-    }),
-  ]);
+  // トランザクション(tx)は 1 本の接続を使うため、クエリは並列にせず順に実行する
+  const registrations = await db.registration.findMany({
+    where: { userId: actor.id, eventId: { in: eventIds } },
+    select: { eventId: true },
+  });
+  const waitlistEntries = await db.waitlistEntry.findMany({
+    where: { userId: actor.id, eventId: { in: eventIds } },
+    select: { eventId: true, position: true },
+  });
   const registered = new Set(registrations.map((r) => r.eventId));
   const ranks = new Map<string, number>();
   for (const entry of waitlistEntries) {
@@ -178,19 +177,18 @@ export async function getEventDetail(
   });
   if (!row) throw new AppError("NOT_FOUND", "イベントが見つかりません");
 
-  const [statuses, rating, myFeedback] = await Promise.all([
-    loadMyStatuses(db, actor, [row]),
-    // 非公開レビューは平均・件数から除外する(マニフェスト 3-7)
-    db.feedback.aggregate({
-      where: { eventId, isHidden: false },
-      _avg: { rating: true },
-      _count: true,
-    }),
-    db.feedback.findUnique({
-      where: { eventId_userId: { eventId, userId: actor.id } },
-      select: { id: true },
-    }),
-  ]);
+  // トランザクション(tx)は 1 本の接続を使うため、クエリは並列にせず順に実行する
+  const statuses = await loadMyStatuses(db, actor, [row]);
+  // 非公開レビューは平均・件数から除外する(マニフェスト 3-7)
+  const rating = await db.feedback.aggregate({
+    where: { eventId, isHidden: false },
+    _avg: { rating: true },
+    _count: true,
+  });
+  const myFeedback = await db.feedback.findUnique({
+    where: { eventId_userId: { eventId, userId: actor.id } },
+    select: { id: true },
+  });
   const myStatus = statuses.get(row.id) ?? { kind: "NONE" };
   const summary = toSummary(row, myStatus);
 
