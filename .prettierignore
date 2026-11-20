@@ -3,3 +3,7 @@ dist/
 coverage/
 backend/prisma/migrations/
 package-lock.json
+
+# 日本語の設計ドキュメントとタスクリストは手で整形する(表や改行を Prettier に崩させない)
+docs/
+*-tasks.md

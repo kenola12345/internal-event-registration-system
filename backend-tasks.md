@@ -176,13 +176,13 @@
 - 依存: Phase 3〜9
 - 主な編集ファイル: `.github/workflows/ci.yml`, `README.md`, `backend/tests/health.api.test.ts`
 
-- [ ] 10-1 H1 `GET /api/health` が未ログインで `{ data: { ok: true } }` を返すことを `tests/health.api.test.ts` で確認する(テンプレート既存のテストを流用)
-- [ ] 10-2 全 API の権限を横断チェックする: 未ログインで A1・A2・H1 以外が 401 になることを 1 つのテストでまとめて確認する
-- [ ] 10-3 `npm run typecheck && npm run lint && npm test` がすべて通ることを確認する
-- [ ] 10-4 `docker compose down -v && docker compose up -d` で、マイグレーションと seed が自動で適用され、seed ユーザーで A1 ログイン → E1 一覧 → R1 登録が `curl` で通ることを確認する
-- [ ] 10-5 `.github/workflows/ci.yml`: push 時に Postgres サービスコンテナを起動し、`npm ci` → `prisma migrate deploy` → lint・型チェック・`npm test` を実行する
-- [ ] 10-6 `README.md` を更新する: Docker での起動方法、seed ユーザー、Prisma スキーマの場所(`backend/prisma/`)、テストコマンド
-- [ ] 10-7 マニフェスト 11 章相当の実装状況(Should 機能を含む)に未実装が無いか確認し、あればマニフェストに「未実装」と理由を書く
+- [x] 10-1 H1 `GET /api/health` が未ログインで `{ data: { ok: true } }` を返すことを `tests/health.api.test.ts` で確認する(テンプレート既存のテストを流用)
+- [x] 10-2 全 API の権限を横断チェックする: 未ログインで A1・A2・H1 以外が 401 になることを 1 つのテストでまとめて確認する
+- [x] 10-3 `npm run typecheck && npm run lint && npm test` がすべて通ることを確認する
+- [x] 10-4 `docker compose down -v && docker compose up -d` で、マイグレーションと seed が自動で適用され、seed ユーザーで A1 ログイン → E1 一覧 → R1 登録が `curl` で通ることを確認する
+- [x] 10-5 `.github/workflows/ci.yml`: push 時に Postgres サービスコンテナを起動し、`npm ci` → `prisma migrate deploy` → lint・型チェック・`npm test` を実行する
+- [x] 10-6 `README.md` を更新する: Docker での起動方法、seed ユーザー、Prisma スキーマの場所(`backend/prisma/`)、テストコマンド
+- [x] 10-7 マニフェスト 11 章相当の実装状況(Should 機能を含む)に未実装が無いか確認し、あればマニフェストに「未実装」と理由を書く
 
 ## 並列実装サマリー
 

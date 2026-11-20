@@ -12,7 +12,7 @@ const unauthenticated = {
 describe("auth routing", () => {
   it("redirects guests from / to the login page", async () => {
     renderApp("/", { "GET /api/auth/me": unauthenticated });
-    expect(await screen.findByRole("heading", { name: "Log in" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "ログイン" })).toBeInTheDocument();
   });
 
   it("shows client-side validation errors without calling the API", async () => {

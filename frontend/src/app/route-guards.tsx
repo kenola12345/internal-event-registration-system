@@ -12,7 +12,7 @@ export function RequireAuth() {
   return <Outlet />;
 }
 
-/** Wrap login/signup. Already-logged-in users are sent to the home page. */
+/** Wrap the login page. Already-logged-in users are sent to the home page. */
 export function GuestOnly() {
   const { user, isLoading } = useMe();
   if (isLoading) return <Spinner />;

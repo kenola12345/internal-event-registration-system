@@ -1,9 +1,9 @@
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { LoginInput, SignupInput, User } from "@template/shared";
+import type { LoginInput, User } from "@template/shared";
 
 import { ApiError } from "@/lib/api-client";
 
-import { fetchMe, login, logout, signup } from "./auth.api";
+import { fetchMe, login, logout } from "./auth.api";
 
 export const authKeys = {
   me: ["auth", "me"] as const,
@@ -40,22 +40,12 @@ export function useLogin() {
   });
 }
 
-export function useSignup() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input: SignupInput) => signup(input),
-    onSuccess: (user) => {
-      queryClient.setQueryData(authKeys.me, user);
-    },
-  });
-}
-
 export function useLogout() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: logout,
     onSuccess: () => {
-      // Drop ALL cached data so the next user never sees the previous user's todos.
+      // Drop ALL cached data so the next user never sees the previous user's data.
       queryClient.clear();
       queryClient.setQueryData(authKeys.me, null);
     },

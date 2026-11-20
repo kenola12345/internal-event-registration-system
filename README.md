@@ -1,148 +1,110 @@
-# Fullstack Template
+# 社内イベント参加登録システム
 
-A starter project for full-stack TypeScript development: **React + Express + Prisma + PostgreSQL**, with login (JWT in an httpOnly cookie) and a small working example feature (todos) wired end to end.
+社内の勉強会・懇親会・講演会・研修などを社員が主催・告知し、他の社員がオンラインで参加登録できる社内イベント運営プラットフォームです。定員・登録締切・キャンセル期限、キャンセル待ちと自動繰り上げ、出席管理、フィードバック(星評価 + コメント)、カテゴリ・タグを扱います。
 
-## What this project is for
+AI駆動開発研修のメンタリング演習として、**要件定義 → マニフェスト → DB設計 → 実装 → 動作確認** の流れで作っています。仕様の正本は [`docs/manifest.md`](docs/manifest.md) です。
 
-1. **A starting point for new projects.** Copy it, delete the `todos` example, and build your own features on a structure that already has validation, error handling, auth, tests and lint rules in place.
-2. **A practice ground for hand-writing code.** Every layer has one complete, small example. Delete a file (for example `backend/src/services/todos.service.ts`) and rewrite it from memory, then check with `npm test`. The tests tell you if you got it right.
+## ドキュメント
 
-## Tech stack
+| ファイル                                                                                                                                                         | 内容                                                 |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| [`docs/manifest.md`](docs/manifest.md)                                                                                                                           | マニフェスト(要求・権限・画面・DB・API の確定版仕様) |
+| [`docs/coding_standards.md`](docs/coding_standards.md)                                                                                                           | コーディング規約                                     |
+| [`CLAUDE.md`](CLAUDE.md)                                                                                                                                         | AI(Claude Code)向けのプロジェクトルール              |
+| [`backend-tasks.md`](backend-tasks.md)                                                                                                                           | バックエンド実装タスクリスト(進捗チェック付き)       |
+| [`docs/初期選定要素リスト.md`](docs/初期選定要素リスト.md) / [`docs/技術スタック.md`](docs/技術スタック.md) / [`docs/詳細要求リスト.md`](docs/詳細要求リスト.md) | マニフェスト作成の過程(Phase 1〜3)                   |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)                                                                                                                   | ディレクトリ構成の理由                               |
 
-| Area     | Tools                                                              |
-| -------- | ------------------------------------------------------------------ |
-| Monorepo | npm workspaces: `frontend/`, `backend/`, `shared/`                 |
-| Language | TypeScript everywhere (`strict`)                                   |
-| Frontend | React 19, Vite, React Router, TanStack Query, Tailwind CSS v4      |
-| Backend  | Node.js, Express 5, Zod, Prisma 7, JWT (httpOnly cookie), bcrypt   |
-| Database | PostgreSQL 17 in Docker                                            |
-| Testing  | Vitest, Testing Library (frontend), Supertest (backend API tests)  |
-| Quality  | ESLint (strict type-checked), Prettier, import-boundary lint rules |
+## 技術スタック
 
-## Prerequisites
+| 領域           | 採用技術                                                           |
+| -------------- | ------------------------------------------------------------------ |
+| モノレポ       | npm workspaces: `frontend/`, `backend/`, `shared/`                 |
+| 言語           | TypeScript(`strict`)                                               |
+| フロントエンド | React 19, Vite, React Router, TanStack Query, Tailwind CSS v4      |
+| バックエンド   | Node.js 24, Express 5, Zod, Prisma 7, JWT(httpOnly Cookie), bcrypt |
+| データベース   | PostgreSQL 17(Docker)                                              |
+| テスト         | Vitest, Supertest(実 DB に対する API テスト), Testing Library      |
 
-- **Node.js 22.9 or newer** (`.nvmrc` pins 24: `nvm use`)
-- **Docker** (runs PostgreSQL)
+## Docker で起動する(推奨)
 
-## Getting started
-
-Run everything from the repository root.
+必要なもの: Docker Desktop のみ。
 
 ```bash
-# 1. Install dependencies (also generates the Prisma client)
-npm install
-
-# 2. Create your env file, then set JWT_SECRET to a random value
-cp backend/.env.example backend/.env
-#    openssl rand -hex 32   <- paste the output as JWT_SECRET
-
-# 3. Start PostgreSQL (waits until it is healthy)
-npm run db:up
-
-# 4. Create the tables
-npm run db:migrate
-
-# 5. (Optional) Load sample data: alice@example.com / admin@example.com, password "password123"
-npm run db:seed
-
-# 6. Start the API and the web app together
-npm run dev
+docker compose up -d
 ```
 
-- Web app: http://localhost:5173 (Vite forwards `/api` to the backend, so there is no CORS setup to do)
+- `db`(PostgreSQL)が healthy になってから `backend` が起動し、マイグレーションの適用 → seed の投入 → API の起動を自動で行います。
 - API: http://localhost:3000/api/health
+- 停止: `docker compose down`(データも消す場合は `docker compose down -v`)
 
-Without the seed, click **Sign up** and create an account.
+> 現在、Docker で起動するのは `db` と `backend` です。`frontend` のコンテナはフロントエンドの実装時に追加します。それまでは下の手順で画面を起動してください。
 
-> **Port 5432 already in use?** The database is published on host port **5433** to avoid clashing with a local Postgres. Change `POSTGRES_PORT` and the port in `backend/.env` together if you need another one.
+### 画面を起動する
 
-## Commands
-
-| Command                             | What it does                                   |
-| ----------------------------------- | ---------------------------------------------- |
-| `npm run dev`                       | API + web app with hot reload                  |
-| `npm test`                          | Backend API tests and frontend component tests |
-| `npm run typecheck`                 | TypeScript check in every workspace            |
-| `npm run lint` / `npm run format`   | ESLint / Prettier                              |
-| `npm run build`                     | Production build of the frontend               |
-| `npm run db:up` / `npm run db:down` | Start / stop PostgreSQL                        |
-| `npm run db:migrate`                | Apply schema changes (`prisma migrate dev`)    |
-| `npm run db:seed`                   | Reset and load sample data                     |
-
-Backend tests use a separate database (`app_test`, created automatically the first time the Docker volume is created) and apply migrations themselves. They never touch your development data.
-
-## Folder structure
-
-```
-.
-├── backend/
-│   ├── prisma/              schema.prisma, migrations/, seed.ts
-│   ├── src/
-│   │   ├── config/          env.ts: the only place that reads process.env
-│   │   ├── routes/          URL + middleware -> controller (no logic)
-│   │   ├── controllers/     HTTP in/out: read validated input, call a service, respond
-│   │   ├── services/        business rules + Prisma queries (no req/res)
-│   │   ├── middleware/      auth, requireRole, validate (Zod), errorHandler, rateLimits
-│   │   ├── errors/          AppError (expected failures)
-│   │   ├── jobs/            recurring background tasks
-│   │   ├── lib/             prisma client, jwt, password hashing, logger
-│   │   ├── types/           Express type augmentation (req.user)
-│   │   ├── app.ts           builds the Express app (no listen: easy to test)
-│   │   └── server.ts        starts the server
-│   └── tests/               *.api.test.ts (Supertest against the test DB)
-├── frontend/
-│   └── src/
-│       ├── app/             router, providers, layout, pages: composes features
-│       ├── features/        one folder per feature: api/, components/, (hooks/, types/)
-│       │   ├── auth/
-│       │   └── todos/
-│       ├── components/ui/   shared, generic UI (button, form-field, spinner)
-│       ├── lib/             api-client, query-client
-│       ├── config/          app-wide constants
-│       ├── hooks/ utils/ assets/   shared, empty until needed
-│       ├── styles/          Tailwind + design tokens
-│       └── testing/         test setup and helpers
-├── shared/src/              Zod schemas + types used by BOTH sides (the API contract)
-├── docs/ARCHITECTURE.md     why it is organized this way, with sources
-├── docker-compose.yml       PostgreSQL
-└── CLAUDE.md                instructions for Claude Code
+```bash
+npm install
+npm run dev -w frontend
 ```
 
-A request flows `route -> middleware (validate / auth) -> controller -> service -> Prisma`. More in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+http://localhost:5173 を開きます(Vite が `/api` を http://localhost:3000 に転送します)。
 
-## API overview
+### seed ユーザー
 
-All responses are `{ "data": ... }` on success or `{ "error": { "code", "message", "details?" } }` on failure.
+パスワードはすべて `password123`(開発専用)。
 
-| Method & path                 | Auth | Description                        |
-| ----------------------------- | ---- | ---------------------------------- |
-| `GET /api/health`             | no   | Liveness check                     |
-| `POST /api/auth/signup`       | no   | Create account (sets login cookie) |
-| `POST /api/auth/login`        | no   | Log in (sets login cookie)         |
-| `POST /api/auth/logout`       | no   | Clear the cookie                   |
-| `GET /api/auth/me`            | yes  | Current user                       |
-| `GET/POST /api/todos`         | yes  | List / create your todos           |
-| `PATCH/DELETE /api/todos/:id` | yes  | Update / delete your todo          |
+| メールアドレス                                                                                          | ロール |
+| ------------------------------------------------------------------------------------------------------- | ------ |
+| `admin@example.com`                                                                                     | ADMIN  |
+| `alice@example.com` / `bob@example.com` / `carol@example.com` / `dave@example.com` / `erin@example.com` | MEMBER |
 
-## Adding your own feature (example: "notes")
+seed には「空きあり」「満席 + キャンセル待ち」「登録締切済み」「キャンセル期限済み」「開催済み(出席状態・レビューあり)」「論理削除済み」などのイベントが入っています。日時は seed 実行時刻からの相対値です。
 
-1. **`shared/src/note.ts`**: Zod schemas and the `Note` type; export from `shared/src/index.ts`.
-2. **`backend/prisma/schema.prisma`**: add the model, then `npm run db:migrate`.
-3. **Backend**: `services/notes.service.ts`, `controllers/notes.controller.ts`, `routes/notes.routes.ts`; register the router in `routes/index.ts`.
-4. **`backend/tests/notes.api.test.ts`**: write the test first if you want to practice.
-5. **Frontend**: `features/notes/{api,components}`, a page in `app/routes/`, and one line in `app/router.tsx`.
+## ローカルで起動する(Docker は DB のみ)
 
-## Known gaps (left for you to decide)
+```bash
+npm install
+cp backend/.env.example backend/.env   # JWT_SECRET を 32 文字以上のランダム値にする(openssl rand -hex 32)
+npm run db:up                          # PostgreSQL だけを起動(ホストのポート 5433)
+npm run db:migrate
+npm run db:seed
+npm run dev                            # API :3000 + Web :5173
+```
 
-- **No production build for the backend.** It runs with `tsx`. Add a bundler or compile step and a Dockerfile when you deploy.
-- **No end-to-end (Playwright) tests** and no CI workflow yet.
-- **No email verification or password reset.**
-- `npm audit` reports advisories in transitive dev tooling; review before shipping.
+> **ポート 5433 が使用中の場合:** リポジトリのルートに `.env` を作り `POSTGRES_PORT=5434` のように別のポートを指定し、`backend/.env` の `DATABASE_URL` のポートも合わせてください。テストを実行するときは `DATABASE_URL=postgresql://app:app@localhost:5434/app_test npm test` のように接続先を上書きします(`backend/.env.test` は 5433 を指しています)。
 
-## References
+## コマンド
 
-The structure follows these sources rather than any single codebase:
+| コマンド                            | 内容                                                           |
+| ----------------------------------- | -------------------------------------------------------------- |
+| `npm run dev`                       | API + 画面(ホットリロード)                                     |
+| `npm test`                          | バックエンドの API テスト + フロントエンドのテスト             |
+| `npm run typecheck`                 | 全ワークスペースの型チェック                                   |
+| `npm run lint` / `npm run format`   | ESLint / Prettier                                              |
+| `npm run db:up` / `npm run db:down` | PostgreSQL の起動 / 停止                                       |
+| `npm run db:migrate`                | スキーマ変更をマイグレーションとして適用(`prisma migrate dev`) |
+| `npm run db:seed`                   | サンプルデータを入れ直す                                       |
 
-- [Bulletproof React: project structure](https://github.com/alan2207/bulletproof-react/blob/master/docs/project-structure.md): feature folders, unidirectional imports, no barrel files
-- [TkDodo: Effective React Query Keys](https://tkdodo.eu/blog/effective-react-query-keys): query key factories colocated with their feature
-- [Bulletproof Node.js project architecture](https://dev.to/santypk4/bulletproof-node-js-project-architecture-4epf): controller / service layers, config module, keeping logic out of controllers
+バックエンドのテストは別のデータベース(`app_test`。Docker のボリュームを初めて作ったときに自動作成)を使い、開始時にマイグレーションを適用します。開発用のデータには触れません。
+
+## Prisma スキーマの場所
+
+課題の提出物にある `prisma/schema.prisma` は、このリポジトリでは **`backend/prisma/schema.prisma`** です(マイグレーションは `backend/prisma/migrations/`、seed は `backend/prisma/seed.ts`)。DB 設計の説明・ER 図はマニフェスト 5 章にあります。
+
+## API
+
+ベースパスは `/api`。成功は `{ "data": ... }`、失敗は `{ "error": { "code", "message", "details?" } }` です。全 27 エンドポイントの仕様・権限・エラーはマニフェスト 6 章、ロール別のアクセス表は 2 章を参照してください。
+
+| リソース       | 主なエンドポイント                                                                                                  |
+| -------------- | ------------------------------------------------------------------------------------------------------------------- |
+| 認証           | `POST /auth/login`, `POST /auth/logout`, `GET /auth/me`                                                             |
+| イベント       | `GET/POST /events`, `GET/PATCH/DELETE /events/:eventId`                                                             |
+| 参加登録・出席 | `POST/DELETE /events/:eventId/registration`, `GET /events/:eventId/registrations`, `PUT .../attendance`             |
+| キャンセル待ち | `POST/DELETE /events/:eventId/waitlist`                                                                             |
+| フィードバック | `GET /events/:eventId/feedbacks`, `POST/PATCH /events/:eventId/feedback`, `PATCH /feedbacks/:feedbackId/visibility` |
+| カテゴリ・タグ | `GET/POST /categories`, `PATCH/DELETE /categories/:categoryId`, `GET /tags`                                         |
+| マイページ     | `GET /me/events`, `GET /me/stats`                                                                                   |
+
+## CI
+
+GitHub Actions(`.github/workflows/ci.yml`)が push のたびに lint・フォーマット・型チェック・テストを実行します。

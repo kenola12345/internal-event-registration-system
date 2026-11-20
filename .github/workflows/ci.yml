@@ -1,0 +1,56 @@
+# push 時に lint・型チェック・テスト(バックエンド API テスト + フロントエンドテスト)を実行する(マニフェスト 9.7)。
+# E2E テストはローカルのみで実行する。
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    services:
+      # バックエンドの API テストは実 DB に対して実行する(Prisma をモックしない)
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+          POSTGRES_DB: app_test
+        # backend/.env.test の接続先(localhost:5433/app_test)に合わせる
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U app -d app_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    env:
+      # npm ci の postinstall(prisma generate)が DATABASE_URL を必要とする。値は .env.test と同じ
+      DATABASE_URL: postgresql://app:app@localhost:5433/app_test
+      TZ: UTC
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Type check
+        run: npm run typecheck
+
+      # バックエンドのテストは global-setup で migrate deploy を実行してから走る
+      - name: Test
+        run: npm test
