@@ -29,48 +29,48 @@
 - 共有ファイルの編集はこの Phase で終わらせ、Phase 3 以降の各 Phase が自分のファイルだけを触るようにする。
 
 ### スキーマ・マイグレーション
-- [ ] 2-1 `backend/prisma/schema.prisma` をマニフェスト 5.4 のスキーマに置き換える(`Todo` を削除、`UserRole` を `MEMBER` / `ADMIN` に)
-- [ ] 2-2 `npm run db:migrate -- --create-only --name event_domain` でマイグレーションを生成し、`USER` → `MEMBER` の enum 変更と `users` の日時列の `timestamptz` 化が含まれることを確認する
-- [ ] 2-3 生成された `migration.sql` の末尾に、マニフェスト 5.4 の CHECK 制約 6 本と `categories_name_lower_key`(`lower(name)` の一意インデックス)を追記する
-- [ ] 2-4 `npm run db:migrate` で適用し、`psql` で `\d events` を見て CHECK 制約があること、`INSERT` で `capacity = 0` が拒否されることを確認する
+- [x] 2-1 `backend/prisma/schema.prisma` をマニフェスト 5.4 のスキーマに置き換える(`Todo` を削除、`UserRole` を `MEMBER` / `ADMIN` に)
+- [x] 2-2 `npm run db:migrate -- --create-only --name event_domain` でマイグレーションを生成し、`USER` → `MEMBER` の enum 変更と `users` の日時列の `timestamptz` 化が含まれることを確認する
+- [x] 2-3 生成された `migration.sql` の末尾に、マニフェスト 5.4 の CHECK 制約 6 本と `categories_name_lower_key`(`lower(name)` の一意インデックス)を追記する
+- [x] 2-4 `npm run db:migrate` で適用し、`psql` で `\d events` を見て CHECK 制約があること、`INSERT` で `capacity = 0` が拒否されることを確認する
 
 ### 共有型(shared)
-- [ ] 2-5 `shared/src/api.ts` の `ERROR_STATUS` をマニフェスト 6 章のエラーコード一覧(21 個)にする(`EMAIL_TAKEN` を削除)
-- [ ] 2-6 `shared/src/auth.ts`: `USER_ROLES` を `["MEMBER", "ADMIN"]` にし、`signupSchema` / `SignupInput` を削除する。`shared/src/todo.ts` を削除し、`shared/src/index.ts` の export を整理する
-- [ ] 2-7 `shared/src/event.ts`: `eventIdParamSchema`、一覧クエリ `listEventsQuerySchema`(q / categoryId / tag / sort / includePast / page / limit)
-- [ ] 2-8 `shared/src/event.ts`: `createEventSchema`(前後関係の `superRefine` 含む)と `updateEventSchema`(全項目任意・最低 1 項目)
-- [ ] 2-9 `shared/src/event.ts`: レスポンス型 `Category`, `UserSummary`, `MyEventStatus`, `EventSummary`, `EventDetail`(`permissions` 含む), `EventUpdateWarning`
-- [ ] 2-10 `shared/src/registration.ts`: `registrationIdParamSchema`, `markAttendanceSchema`, `AttendanceStatus`, R3 のレスポンス型
-- [ ] 2-11 `shared/src/feedback.ts`: `createFeedbackSchema`, `updateFeedbackSchema`, `feedbackIdParamSchema`, `feedbackVisibilitySchema`, 一覧クエリ, `Feedback` / F1 のレスポンス型
-- [ ] 2-12 `shared/src/category.ts`: `createCategorySchema`, `updateCategorySchema`, `categoryIdParamSchema`, `listCategoriesQuerySchema`。`shared/src/tag.ts`: `listTagsQuerySchema`, タグ配列スキーマ(正規化前の長さ検証)
-- [ ] 2-13 `shared/src/me.ts`: M1 / M2 のレスポンス型。`shared/src/index.ts` に新ファイルの export を追加し、`npm run typecheck` が通ることを確認する
+- [x] 2-5 `shared/src/api.ts` の `ERROR_STATUS` をマニフェスト 6 章のエラーコード一覧(21 個)にする(`EMAIL_TAKEN` を削除)
+- [x] 2-6 `shared/src/auth.ts`: `USER_ROLES` を `["MEMBER", "ADMIN"]` にし、`signupSchema` / `SignupInput` を削除する。`shared/src/todo.ts` を削除し、`shared/src/index.ts` の export を整理する
+- [x] 2-7 `shared/src/event.ts`: `eventIdParamSchema`、一覧クエリ `listEventsQuerySchema`(q / categoryId / tag / sort / includePast / page / limit)
+- [x] 2-8 `shared/src/event.ts`: `createEventSchema`(前後関係の `superRefine` 含む)と `updateEventSchema`(全項目任意・最低 1 項目)
+- [x] 2-9 `shared/src/event.ts`: レスポンス型 `Category`, `UserSummary`, `MyEventStatus`, `EventSummary`, `EventDetail`(`permissions` 含む), `EventUpdateWarning`
+- [x] 2-10 `shared/src/registration.ts`: `registrationIdParamSchema`, `markAttendanceSchema`, `AttendanceStatus`, R3 のレスポンス型
+- [x] 2-11 `shared/src/feedback.ts`: `createFeedbackSchema`, `updateFeedbackSchema`, `feedbackIdParamSchema`, `feedbackVisibilitySchema`, 一覧クエリ, `Feedback` / F1 のレスポンス型
+- [x] 2-12 `shared/src/category.ts`: `createCategorySchema`, `updateCategorySchema`, `categoryIdParamSchema`, `listCategoriesQuerySchema`。`shared/src/tag.ts`: `listTagsQuerySchema`, タグ配列スキーマ(正規化前の長さ検証)
+- [x] 2-13 `shared/src/me.ts`: M1 / M2 のレスポンス型。`shared/src/index.ts` に新ファイルの export を追加し、`npm run typecheck` が通ることを確認する
 
 ### 認証・共通部品
-- [ ] 2-14 `backend/src/lib/jwt.ts` の `payloadSchema` のロールを `MEMBER` / `ADMIN` にする
-- [ ] 2-15 `backend/src/middleware/auth.ts`: `requireAuth` を非同期にし、JWT 検証後に DB からユーザーを読み込んで `req.user = { id, role }`(DB の現在のロール)を設定する。ユーザーが存在しなければ `401 UNAUTHENTICATED`
-- [ ] 2-16 `backend/src/lib/prisma-errors.ts`: `isUniqueViolation(error)`(`P2002`)と `isForeignKeyViolation(error)`(`P2003`)を作る
-- [ ] 2-17 `backend/src/lib/event-lock.ts`: `lockEvent(tx, eventId)`(`$queryRaw` で `SELECT ... FOR UPDATE`、未削除のみ、無ければ `NOT_FOUND`)
-- [ ] 2-18 `backend/src/lib/tag-normalize.ts`: `normalizeTag()`(trim → NFKC → 小文字化 → 連続空白を 1 つ)と `normalizeTags()`(重複除去・1〜20 文字検証)
-- [ ] 2-19 `backend/src/lib/tag-normalize.test.ts`: 「React」「react」「ＲＥＡＣＴ」が同一になる、空白の正規化、重複除去のユニットテスト
-- [ ] 2-20 `backend/src/services/policies/event-policy.ts`: `Actor` 型、`canManageEvent`, `assertCanManageEvent`
-- [ ] 2-21 `backend/src/services/policies/event-policy.test.ts`: 主催者・admin・他の member の 3 パターンのユニットテスト
+- [x] 2-14 `backend/src/lib/jwt.ts` の `payloadSchema` のロールを `MEMBER` / `ADMIN` にする
+- [x] 2-15 `backend/src/middleware/auth.ts`: `requireAuth` を非同期にし、JWT 検証後に DB からユーザーを読み込んで `req.user = { id, role }`(DB の現在のロール)を設定する。ユーザーが存在しなければ `401 UNAUTHENTICATED`
+- [x] 2-16 `backend/src/lib/prisma-errors.ts`: `isUniqueViolation(error)`(`P2002`)と `isForeignKeyViolation(error)`(`P2003`)を作る
+- [x] 2-17 `backend/src/lib/event-lock.ts`: `lockEvent(tx, eventId)`(`$queryRaw` で `SELECT ... FOR UPDATE`、未削除のみ、無ければ `NOT_FOUND`)
+- [x] 2-18 `backend/src/lib/tag-normalize.ts`: `normalizeTag()`(trim → NFKC → 小文字化 → 連続空白を 1 つ)と `normalizeTags()`(重複除去・1〜20 文字検証)
+- [x] 2-19 `backend/src/lib/tag-normalize.test.ts`: 「React」「react」「ＲＥＡＣＴ」が同一になる、空白の正規化、重複除去のユニットテスト
+- [x] 2-20 `backend/src/services/policies/event-policy.ts`: `Actor` 型、`canManageEvent`, `assertCanManageEvent`
+- [x] 2-21 `backend/src/services/policies/event-policy.test.ts`: 主催者・admin・他の member の 3 パターンのユニットテスト
 
 ### イベントの表示と繰り上げ(複数 Phase が使う共通サービス)
-- [ ] 2-22 `backend/src/services/event-view.service.ts`: イベント行 + 集計(参加確定数・待機数)+ 閲覧者から `EventSummary` を組み立てる `toEventSummary()`(`myStatus` と待機順位の計算を含む)
-- [ ] 2-23 `backend/src/services/event-view.service.ts`: `getEventDetail(actor, eventId, tx?)`。説明・締切・`scheduleChangedAt`・参加者(登録順)・平均評価(非公開除外、小数第 1 位)を含める
-- [ ] 2-24 `backend/src/services/event-view.service.ts`: `permissions` の 9 項目(`canEdit` 〜 `canEditFeedback`)をマニフェスト E2 の条件どおりに計算する
-- [ ] 2-25 `backend/src/services/waitlist-promotion.service.ts`: `promoteWaiters(tx, event, { count, trigger, vacatedByUserId })`。position 昇順に参加確定行作成 → 待機行削除 → `waitlist_promotions` 記録。開催開始後は何もしない。繰り上げた結果を返す(ログはコミット後に呼び出し側で出す)
-- [ ] 2-26 `backend/src/services/waitlist-promotion.service.ts`: `logPromotions(promotions)`(コミット後に呼ぶログ出力)
+- [x] 2-22 `backend/src/services/event-view.service.ts`: イベント行 + 集計(参加確定数・待機数)+ 閲覧者から `EventSummary` を組み立てる `toEventSummary()`(`myStatus` と待機順位の計算を含む)
+- [x] 2-23 `backend/src/services/event-view.service.ts`: `getEventDetail(actor, eventId, tx?)`。説明・締切・`scheduleChangedAt`・参加者(登録順)・平均評価(非公開除外、小数第 1 位)を含める
+- [x] 2-24 `backend/src/services/event-view.service.ts`: `permissions` の 9 項目(`canEdit` 〜 `canEditFeedback`)をマニフェスト E2 の条件どおりに計算する
+- [x] 2-25 `backend/src/services/waitlist-promotion.service.ts`: `promoteWaiters(tx, event, { count, trigger, vacatedByUserId })`。position 昇順に参加確定行作成 → 待機行削除 → `waitlist_promotions` 記録。開催開始後は何もしない。繰り上げた結果を返す(ログはコミット後に呼び出し側で出す)
+- [x] 2-26 `backend/src/services/waitlist-promotion.service.ts`: `logPromotions(promotions)`(コミット後に呼ぶログ出力)
 
 ### ルーター・テスト基盤・seed
-- [ ] 2-27 空のルーター(`Router()` を export するだけ)として `routes/events.routes.ts`, `registrations.routes.ts`, `waitlist.routes.ts`, `feedbacks.routes.ts`, `categories.routes.ts`, `tags.routes.ts`, `me.routes.ts` を作り、`routes/index.ts` にすべて登録する(以降の Phase はこの index を触らない)
-- [ ] 2-28 `backend/tests/helpers.ts`: `resetDb()` を全テーブル対応にする(子テーブルから削除)。`hoursFromNow(n)` を追加する
-- [ ] 2-29 `backend/tests/helpers.ts`: ファクトリ `createUser({ role })`, `createCategory()`, `createEvent({ organizerId, capacity, startsAt, ... })` と、ログイン済みエージェント `loginAs(user)` を作る(サインアップを使わない)
-- [ ] 2-30 `backend/prisma/seed.ts`: 既存データ削除(子テーブルから)とユーザー 6 名(`admin` + `alice`〜`erin`、パスワード `password123`)
-- [ ] 2-31 `backend/prisma/seed.ts`: カテゴリ 5 件と、無効化カテゴリ 1 件(⑧用)、タグ
-- [ ] 2-32 `backend/prisma/seed.ts`: イベント ①空きあり ②満席 + 待機 2 名 ③登録締切済み ④キャンセル期限済み(日時は実行時刻からの相対値)
-- [ ] 2-33 `backend/prisma/seed.ts`: イベント ⑤開催済み(出席・欠席・未マーク混在、レビュー 3 件うち匿名 1・非公開 1)⑥開催済み・未投稿の出席者あり ⑦論理削除済み ⑧無効化カテゴリ使用
-- [ ] 2-34 `npm run db:seed` を 2 回続けて実行しても成功し、同じ件数になることを確認する
+- [x] 2-27 空のルーター(`Router()` を export するだけ)として `routes/events.routes.ts`, `registrations.routes.ts`, `waitlist.routes.ts`, `feedbacks.routes.ts`, `categories.routes.ts`, `tags.routes.ts`, `me.routes.ts` を作り、`routes/index.ts` にすべて登録する(以降の Phase はこの index を触らない)
+- [x] 2-28 `backend/tests/helpers.ts`: `resetDb()` を全テーブル対応にする(子テーブルから削除)。`hoursFromNow(n)` を追加する
+- [x] 2-29 `backend/tests/helpers.ts`: ファクトリ `createUser({ role })`, `createCategory()`, `createEvent({ organizerId, capacity, startsAt, ... })` と、ログイン済みエージェント `loginAs(user)` を作る(サインアップを使わない)
+- [x] 2-30 `backend/prisma/seed.ts`: 既存データ削除(子テーブルから)とユーザー 6 名(`admin` + `alice`〜`erin`、パスワード `password123`)
+- [x] 2-31 `backend/prisma/seed.ts`: カテゴリ 5 件と、無効化カテゴリ 1 件(⑧用)、タグ
+- [x] 2-32 `backend/prisma/seed.ts`: イベント ①空きあり ②満席 + 待機 2 名 ③登録締切済み ④キャンセル期限済み(日時は実行時刻からの相対値)
+- [x] 2-33 `backend/prisma/seed.ts`: イベント ⑤開催済み(出席・欠席・未マーク混在、レビュー 3 件うち匿名 1・非公開 1)⑥開催済み・未投稿の出席者あり ⑦論理削除済み ⑧無効化カテゴリ使用
+- [x] 2-34 `npm run db:seed` を 2 回続けて実行しても成功し、同じ件数になることを確認する
 
 ## Phase 3: 認証 API 【並列可】
 - 依存: Phase 2

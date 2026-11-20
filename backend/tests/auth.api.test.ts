@@ -17,7 +17,7 @@ describe("POST /api/auth/signup", () => {
 
 describe("POST /api/auth/login", () => {
   it("logs in with correct credentials, sets an httpOnly cookie and never returns the password hash", async () => {
-    await createUser();
+    await createUser({ email: "alice@example.com" });
     const res = await request(app)
       .post("/api/auth/login")
       .send({ email: "Alice@Example.com", password: "password123" }) // email is case-insensitive
@@ -30,7 +30,7 @@ describe("POST /api/auth/login", () => {
   });
 
   it("gives the same error for a wrong password and an unknown email", async () => {
-    await createUser();
+    await createUser({ email: "alice@example.com" });
     const wrong = await request(app)
       .post("/api/auth/login")
       .send({ email: "alice@example.com", password: "wrong-password" })
